@@ -1,0 +1,21 @@
+version: "3.1"
+services: 
+    consumer_producer:
+        build:
+            dockerfile: Dockerfile
+            context: ./
+        command: ["./wait-for.sh", "rabbitmq:5672", "--", "node", "dist/index.js"]
+        depends_on: 
+            - rabbitmq
+    consumer_consumer:
+        build:
+            dockerfile: Dockerfile
+            context: ./
+        command: ["./wait-for.sh", "rabbitmq:5672", "--", "node", "dist/consumer.js"]
+        depends_on: 
+            - rabbitmq
+    rabbitmq:
+        image: rabbitmq:3-management
+        ports: 
+            - 5672:5672
+            - 15672:15672
