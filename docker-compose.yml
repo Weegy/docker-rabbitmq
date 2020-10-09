@@ -1,17 +1,25 @@
-version: "3.1"
+version: "3.3"
 services: 
     consumer_producer:
         build:
             dockerfile: Dockerfile
             context: ./
-        command: ["./wait-for.sh", "rabbitmq:5672", "--", "node", "dist/index.js"]
+        volumes:
+            - ./wait-for.sh/:/app/wait-for.sh
+            - ./src/:/app/src/
+            - ./node_modules/:/app/node_modules/
+        command: ["./wait-for.sh", "rabbitmq:5672", "--", "npm", "run", "watch"]
         depends_on: 
             - rabbitmq
     consumer_consumer:
         build:
             dockerfile: Dockerfile
             context: ./
-        command: ["./wait-for.sh", "rabbitmq:5672", "--", "node", "dist/consumer.js"]
+        volumes:
+            - ./wait-for.sh/:/app/wait-for.sh
+            - ./src/:/app/src/
+            - ./node_modules/:/app/node_modules/
+        command: ["./wait-for.sh", "rabbitmq:5672", "--", "npm", "run", "watch"]
         depends_on: 
             - rabbitmq
     rabbitmq:

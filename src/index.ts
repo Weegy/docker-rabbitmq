@@ -12,7 +12,7 @@ connect("amqp://rabbitmq")
     return ch.assertQueue(q).then(function(ok) {
       return ch.consume(q, function(msg) {
         if (msg !== null) {
-          console.log(msg.content.toString());
+          console.error(`DEBUG: ${msg.content.toString()}`);
           ch.ack(msg);
           return ch.assertQueue(qe).then(function(oka) {
             return ch.sendToQueue(qe, Buffer.from('start encoding'));
