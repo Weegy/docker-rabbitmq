@@ -4,9 +4,13 @@ services:
         build:
             dockerfile: Dockerfile
             context: ./
-        command: ["./wait-for.sh", "rabbitmq:5672", "--", "node", "dist/index.js"]
+        command: ["./wait-for.sh", "rabbitmq:5672", "--", "node", "dist/step-one-unzip.js"]
+        volumes:
+            - ./zip/:/app/zip/
+            - ./extract/:/app/extract/
         depends_on: 
             - rabbitmq
+        restart: on-failure
     consumer_consumer:
         build:
             dockerfile: Dockerfile
@@ -14,8 +18,10 @@ services:
         command: ["./wait-for.sh", "rabbitmq:5672", "--", "node", "dist/consumer.js"]
         depends_on: 
             - rabbitmq
+        restart: on-failure
     rabbitmq:
         image: rabbitmq:3-management
         ports: 
             - 5672:5672
             - 15672:15672
+          
