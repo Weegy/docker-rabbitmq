@@ -9,7 +9,7 @@
     "prod": "node index.js",
     "watch": "nodemon",
     "step-one": "node -r ts-node/register ./src/step-one-unzip.ts",
-    "step-two": "node -r ts-node/register ./src/step-one-unzip.ts",
+    "step-two": "node -r ts-node/register ./src/step-one-encode.ts",
     "step-three": "node -r ts-node/register ./src/step-three-upload.ts"
   },
   "devDependencies": {
