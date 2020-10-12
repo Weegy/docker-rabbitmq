@@ -1,25 +1,29 @@
 version: "3.3"
 services: 
-    consumer_producer:
+    step_one_unzip:
         build:
             dockerfile: Dockerfile
             context: ./
         volumes:
             - ./wait-for.sh/:/app/wait-for.sh
             - ./src/:/app/src/
+            - ./zip/:/app/zip/
+            - ./extract/:/app/extract/
             - ./node_modules/:/app/node_modules/
-        command: ["./wait-for.sh", "rabbitmq:5672", "--", "npm", "run", "watch"]
+        command: ["./wait-for.sh", "rabbitmq:5672", "--", "npm", "run", "step-one"]
         depends_on: 
             - rabbitmq
-    consumer_consumer:
+    step_three_upload:
         build:
             dockerfile: Dockerfile
             context: ./
         volumes:
             - ./wait-for.sh/:/app/wait-for.sh
             - ./src/:/app/src/
+            - ./zip/:/app/zip/
+            - ./extract/:/app/extract/
             - ./node_modules/:/app/node_modules/
-        command: ["./wait-for.sh", "rabbitmq:5672", "--", "npm", "run", "watch"]
+        command: ["./wait-for.sh", "rabbitmq:5672", "--", "npm", "run", "step-three"]
         depends_on: 
             - rabbitmq
     rabbitmq:
