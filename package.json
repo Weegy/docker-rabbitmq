@@ -7,7 +7,10 @@
     "start": "node --inspect=5858 -r ts-node/register ./src/index.ts",
     "web": "tsc",
     "prod": "node index.js",
-    "watch": "nodemon"
+    "watch": "nodemon",
+    "step-one": "node -r ts-node/register ./src/step-one-unzip.ts",
+    "step-two": "node -r ts-node/register ./src/step-one-unzip.ts",
+    "step-three": "node -r ts-node/register ./src/step-three-upload.ts"
   },
   "devDependencies": {
     "@types/amqplib": "^0.5.13",
