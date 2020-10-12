@@ -17,16 +17,16 @@ services:
     step_two_convert:
         build:
             dockerfile: Dockerfile
-                context: ./
-            volumes:
-                - ./wait-for.sh/:/app/wait-for.sh
-                - ./src/:/app/src/
-                - ./zip/:/app/zip/
-                - ./extract/:/app/extract/
-                - ./node_modules/:/app/node_modules/
-            command: ["./wait-for.sh", "rabbitmq:5672", "--", "npm", "run", "step-two"]
-            depends_on: 
-                - rabbitmq    
+            context: ./
+        volumes:
+            - ./wait-for.sh/:/app/wait-for.sh
+            - ./src/:/app/src/
+            - ./zip/:/app/zip/
+            - ./extract/:/app/extract/
+            - ./node_modules/:/app/node_modules/
+        command: ["./wait-for.sh", "rabbitmq:5672", "--", "npm", "run", "step-two"]
+        depends_on: 
+            - rabbitmq    
 
     step_three_upload:
         build:
