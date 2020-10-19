@@ -1,60 +1,83 @@
-import { connect } from "amqplib"
-import { dir } from "console"
+/* eslint-disable consistent-return */
+/* eslint-disable no-console */
 import * as extract from "extract-zip"
-import * as fs from "fs"
 import * as glob from "glob"
-import { resolve } from "path"
-import { IExtractMessage } from "./models/extract-message"
+import { IExtractMessage } from "./models/extract-messages"
+
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const amqp = require("amqplib/callback_api")
 
 const stepOne = "step_one"
 const stepTwo = "step_two"
+const uploadQueue = "step_three"
 
 // {
-//   "fileName": "Dirty EDM Basslines Vol 1 - ACID WAV.zip",
+//   "fileName": "Massive EDM Drops Vol 3 - ACID WAV.zip",
 //   "packId": 12
 // }
 
+const bail = (err): void => {
+	console.error(`STEP ONE: ${err}`)
+	throw err
+}
 
-connect("amqp://rabbitmq")
-  .then(function (conn) {
-    return conn.createChannel()
-  })
-  .then(function (ch) {
-    return ch.assertQueue(stepOne).then(function (ok) {
-      return ch.consume(stepOne, async function (msg) {
-        if (msg !== null) {
-          const fileMessage = JSON.parse(msg.content.toString()) as IExtractMessage
-          console.log(`STEP_ONE:  ${fileMessage}`)
-          const extractDir = `/app/extract/${fileMessage.packId}`
-          ch.ack(msg)
-          await extract(`/app/zip/${fileMessage.fileName}`, {
-            dir: extractDir,
-          })
-            .then(async () => {
-              glob(`${extractDir}/**/*.wav`, (_err: any, matches: any[]) => {
-                matches.forEach((filename: any) => {
-                  return ch.assertQueue(stepTwo).then(function (oka) {
-                    return ch.sendToQueue(
-                      stepTwo,
-                      Buffer.from(`{
-                        "fileName": "${filename}",
-                        "packId": ${fileMessage.packId}
-                    }`)
-                    )
-                  })
-                })
-              })
-              await glob(`${extractDir}/**/*.mp3`, (_err: any, matches: any[]) => {
-                matches.forEach((filename: any) => console.log(filename))
-              })
-              console.log(`STEP_ONE: MIDI FILES:`)
-              await glob(`${extractDir}/**/*.mid`, (_err: any, matches: any[]) => {
-                matches.forEach((filename: any) => console.log(filename))
-              })
-            })
-            .catch((error: any) => console.log(`DEBUG: ${error}`))
-        }
-      })
-    })
-  })
-  .catch((error) => console.warn(error))
+const producer = (conn): void => {
+	conn.createChannel((err, ch) => {
+		if (err != null) bail(err)
+		ch.assertQueue(stepOne)
+		ch.prefetch(1)
+		ch.consume(stepOne, async (msg) => {
+			if (msg !== null) {
+				const fileMessage = JSON.parse(
+					msg.content.toString()
+				) as IExtractMessage
+				console.log(`STEP_ONE:  ${fileMessage}`)
+				const extractDir = `/app/extract/${fileMessage.packId}`
+				try {
+					await extract(`/app/zip/${fileMessage.fileName}`, {
+						dir: extractDir,
+					})
+					glob(`${extractDir}/**/*.wav`, (_err, matches) => {
+						matches.forEach(async (filename) => {
+							await ch.assertQueue(stepTwo)
+							await ch.sendToQueue(
+								stepTwo,
+								Buffer.from(
+									`{"fileName": "${filename}","packId": ${fileMessage.packId}}`
+								)
+							)
+						})
+					})
+					glob(`${extractDir}/**/*.mid`, (_err, matches) => {
+						matches.forEach(async (filename) => {
+							await ch.assertQueue(uploadQueue)
+							await ch.sendToQueue(
+								uploadQueue,
+								Buffer.from(
+									`{"fileName": "${filename}","packId": ${fileMessage.packId}}`
+								)
+							)
+						})
+					})
+				} catch (error) {
+					bail(error)
+				}
+				console.log("ended step 1")
+				ch.ack(msg)
+			}
+		})
+	})
+}
+const init = (): void => {
+	console.log("connectToRabbit")
+	amqp.connect("amqp://rabbitmq", (errorConnect, connection) => {
+		if (errorConnect) {			
+			bail("error connect")
+			return setTimeout(init, 1000)
+		}
+		console.log("started step 1")
+		producer(connection)
+	})
+}
+
+init()

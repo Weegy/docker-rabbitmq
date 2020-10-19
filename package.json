@@ -9,8 +9,10 @@
     "prod": "node index.js",
     "watch": "nodemon",
     "step-one": "node -r ts-node/register ./src/step-one-unzip.ts",
-    "step-two": "node -r ts-node/register ./src/step-one-encode.ts",
-    "step-three": "node -r ts-node/register ./src/step-three-upload.ts"
+    "step-two-mp3": "node -r ts-node/register ./src/step-two-mp3.ts",
+    "step-two-json": "node -r ts-node/register ./src/step-two-json.ts",
+    "step-three": "node -r ts-node/register ./src/step-three-upload.ts",
+    "step-four": "node -r ts-node/register ./src/step-four-wipe.ts"
   },
   "devDependencies": {
     "@types/amqplib": "^0.5.13",

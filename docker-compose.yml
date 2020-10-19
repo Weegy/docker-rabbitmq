@@ -14,7 +14,7 @@ services:
         depends_on: 
             - rabbitmq
 
-    step_two_convert:
+    step_two_convert_mp3:
         build:
             dockerfile: Dockerfile
             context: ./
@@ -24,9 +24,23 @@ services:
             - ./zip/:/app/zip/
             - ./extract/:/app/extract/
             - ./node_modules/:/app/node_modules/
-        command: ["./wait-for.sh", "rabbitmq:5672", "--", "npm", "run", "step-two"]
+        command: ["./wait-for.sh", "rabbitmq:5672", "--", "npm", "run", "step-two-mp3"]
         depends_on: 
-            - rabbitmq    
+            - rabbitmq  
+
+    step_two_convert_json:
+        build:
+            dockerfile: Dockerfile
+            context: ./
+        volumes:
+            - ./wait-for.sh/:/app/wait-for.sh
+            - ./src/:/app/src/
+            - ./zip/:/app/zip/
+            - ./extract/:/app/extract/
+            - ./node_modules/:/app/node_modules/
+        command: ["./wait-for.sh", "rabbitmq:5672", "--", "npm", "run", "step-two-json"]
+        depends_on: 
+            - rabbitmq
 
     step_three_upload:
         build:
@@ -41,6 +55,21 @@ services:
         command: ["./wait-for.sh", "rabbitmq:5672", "--", "npm", "run", "step-three"]
         depends_on: 
             - rabbitmq
+
+    step_four_wipe:
+            build:
+                dockerfile: Dockerfile
+                context: ./
+            volumes:
+                - ./wait-for.sh/:/app/wait-for.sh
+                - ./src/:/app/src/
+                - ./zip/:/app/zip/
+                - ./extract/:/app/extract/
+                - ./node_modules/:/app/node_modules/
+            command: ["./wait-for.sh", "rabbitmq:5672", "--", "npm", "run", "step-four"]
+            depends_on: 
+                - rabbitmq            
+
     rabbitmq:
         image: rabbitmq:3-management
         ports: 

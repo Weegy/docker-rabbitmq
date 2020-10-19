@@ -1,6 +1,6 @@
 export interface IExtractMessage {
 	fileName: string
-	packId: number
+	packId?: number
 }
 
 export interface IUploadMessage {
